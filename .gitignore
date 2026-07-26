@@ -1,0 +1,4 @@
+.env
+state.txt
+__pycache__/
+deploy.sh
