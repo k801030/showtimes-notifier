@@ -13,17 +13,16 @@ HEADERS = {
 
 STATE_FILE = "state.txt"
 
-def get_upcoming_weekend():
+def get_upcoming_week():
     today = datetime.now()
     if today.weekday() > 4:
         next_fri = today + timedelta(days=(4 - today.weekday() + 7))
     else:
         next_fri = today + timedelta(days=(4 - today.weekday()))
     
-    next_sat = next_fri + timedelta(days=1)
-    next_sun = next_fri + timedelta(days=2)
+    next_thu = next_fri + timedelta(days=6)
     
-    return next_fri.strftime("%Y-%m-%d"), next_sat.strftime("%Y-%m-%d"), next_sun.strftime("%Y-%m-%d")
+    return next_fri.strftime("%Y-%m-%d"), next_thu.strftime("%Y-%m-%d")
 
 def is_already_notified(date_str):
     if os.getenv("K_SERVICE"):
@@ -50,14 +49,14 @@ def mark_as_notified(date_str):
         with open(STATE_FILE, "w") as f:
             f.write(date_str)
 
-def send_notification(theater_name, fri_str, sun_str, movie_count):
+def send_notification(theater_name, fri_str, thu_str, movie_count):
     # 動態代入 THEATER_ID，確保未來換影城時連結依然 100% 正確
     target_url = f"https://www.showtimes.com.tw/ticketing/?cid={config.THEATER_ID}"
     short_name = theater_name.replace("影城", "")
     f_date = fri_str[5:].replace("-", "/")
-    s_date = sun_str[5:].replace("-", "/")
+    t_date = thu_str[5:].replace("-", "/")
     
-    print(f"\n[準備發送通知] {short_name} | {f_date}~{s_date} | {movie_count}部電影")
+    print(f"\n[準備發送通知] {short_name} | {f_date}~{t_date} | {movie_count}部電影")
     
     if config.NOTIFICATION_CHANNEL == "discord":
         if not config.WEBHOOK_URL:
@@ -67,9 +66,9 @@ def send_notification(theater_name, fri_str, sun_str, movie_count):
         payload = {
             "embeds": [
                 {
-                    "title": f"【{short_name}】本週末場次開放！",
+                    "title": f"【{short_name}】場次開放！",
                     "url": target_url,
-                    "description": f"{f_date} ~ {s_date} (共 {movie_count} 部電影)",
+                    "description": f"{f_date} ~ {t_date} (共 {movie_count} 部電影)",
                     "color": 15158332
                 }
             ]
@@ -88,7 +87,7 @@ def send_notification(theater_name, fri_str, sun_str, movie_count):
         # 極簡化 Telegram 訊息
         payload = {
             "chat_id": config.TELEGRAM_CHANNEL_ID,
-            "text": f"**【{short_name}】本週末場次開放！**\n{f_date} ~ {s_date} (共 {movie_count} 部電影)",
+            "text": f"**【{short_name}】場次開放 (週五至下週四)！**\n{f_date} ~ {t_date} (共 {movie_count} 部電影)",
             "parse_mode": "Markdown",
             "reply_markup": {
                 "inline_keyboard": [
@@ -131,39 +130,29 @@ def run_check():
         return
         
     today_str = datetime.now().strftime("%Y-%m-%d")
-    fri_str, sat_str, sun_str = get_upcoming_weekend()
+    fri_str, thu_str = get_upcoming_week()
     
     today_movies = set()
     fri_movies = set()
-    sat_movies = set()
-    sun_movies = set()
+    week_movies = set()
     
     for e in events_theater:
         d = e['startedAt'][:10]
         if d == today_str:
             today_movies.add(e['programId'])
-        elif d == fri_str:
+        if fri_str <= d <= thu_str:
+            week_movies.add(e['programId'])
+        if d == fri_str:
             fri_movies.add(e['programId'])
-        elif d == sat_str:
-            sat_movies.add(e['programId'])
-        elif d == sun_str:
-            sun_movies.add(e['programId'])
             
     n_today = len(today_movies)
     n_fri = len(fri_movies)
-    n_sat = len(sat_movies)
-    n_sun = len(sun_movies)
+    n_week = len(week_movies)
     
-    # 寫 log (詳細印出各天數量，精準保留您修改後的無 emoji 清潔風格)
+    # 寫 log (詳細印出今天、週五及全週數量，精準保留無 emoji 清潔風格)
     print(f"[場次統計] 今天 ({today_str}): {n_today} 部")
     print(f"[場次統計] 週五 ({fri_str}): {n_fri} 部")
-    print(f"[場次統計] 週六 ({sat_str}): {n_sat} 部")
-    print(f"[場次統計] 週日 ({sun_str}): {n_sun} 部")
-    
-    # 取聯集，計算本週末共有幾部電影
-    weekend_movies = fri_movies | sat_movies | sun_movies
-    n_weekend = len(weekend_movies)
-    print(f"本週末總計 (聯集): {n_weekend} 部電影")
+    print(f"[場次統計] 全週總計 ({fri_str}~{thu_str}): {n_week} 部電影")
     
     if n_today == 0:
         print("❌ 警告：今天居然沒有任何電影？無法計算比例。")
@@ -181,7 +170,7 @@ def run_check():
         if not force_notify and is_already_notified(fri_str):
             print("🤫 今天已經通知過了，不再重複轟炸。")
         else:
-            send_notification(theater_name, fri_str, sun_str, n_weekend)
+            send_notification(theater_name, fri_str, thu_str, n_week)
             if not force_notify:
                 mark_as_notified(fri_str)
     else:
