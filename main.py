@@ -109,6 +109,12 @@ def run_check():
     print(f"目標影城 ID: {config.THEATER_ID}")
     print(f"通知管道: {config.NOTIFICATION_CHANNEL}")
     
+    fri_str, thu_str = get_upcoming_week()
+    force_notify = os.getenv("TEST_NOTIFICATION") == "1"
+    if not force_notify and is_already_notified(fri_str):
+        print("🤫 今天已經通知過了，不再重複轟炸。")
+        return
+        
     print("正在抓取秀泰影城 API...")
     try:
         r = requests.get("https://capi.showtimes.com.tw/4/app/bootstrap", headers=HEADERS)
@@ -130,7 +136,6 @@ def run_check():
         return
         
     today_str = datetime.now().strftime("%Y-%m-%d")
-    fri_str, thu_str = get_upcoming_week()
     
     today_movies = set()
     fri_movies = set()
@@ -167,12 +172,9 @@ def run_check():
         if force_notify:
             print("⚠️ [測試模式] 強制發送通知！")
         print("🎉 偵測到全面開放！")
-        if not force_notify and is_already_notified(fri_str):
-            print("🤫 今天已經通知過了，不再重複轟炸。")
-        else:
-            send_notification(theater_name, fri_str, thu_str, n_week)
-            if not force_notify:
-                mark_as_notified(fri_str)
+        send_notification(theater_name, fri_str, thu_str, n_week)
+        if not force_notify:
+            mark_as_notified(fri_str)
     else:
         print("⏳ 尚未全面開放，繼續等待...")
         
