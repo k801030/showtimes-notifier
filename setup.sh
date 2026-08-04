@@ -9,8 +9,8 @@ else
   exit 1
 fi
 
-if [ -z "$WEBHOOK_URL" ] || [ -z "$PROJECT_ID" ] || [ -z "$PROJECT_NUMBER" ] || [ -z "$REGION" ]; then
-  echo "❌ 錯誤：.env 中未設定必要的環境變數 (WEBHOOK_URL, PROJECT_ID, PROJECT_NUMBER, REGION)！"
+if [ -z "$SHOWTIMES_WEBHOOK_URL" ] || [ -z "$PROJECT_ID" ] || [ -z "$PROJECT_NUMBER" ] || [ -z "$REGION" ]; then
+  echo "❌ 錯誤：.env 中未設定必要的環境變數 (SHOWTIMES_WEBHOOK_URL, PROJECT_ID, PROJECT_NUMBER, REGION)！"
   exit 1
 fi
 
@@ -35,15 +35,15 @@ echo "=== 2. 建立 Firestore 資料庫 ==="
 gcloud firestore databases create --location=$REGION --type=firestore-native --project=$PROJECT_ID || true
 
 echo "=== 3. 建立 Secret Manager Secrets ==="
-gcloud secrets create WEBHOOK_URL --replication-policy="automatic" --project=$PROJECT_ID || true
+gcloud secrets create SHOWTIMES_WEBHOOK_URL --replication-policy="automatic" --project=$PROJECT_ID || true
 gcloud secrets create VIESHOW_WEBHOOK_URL --replication-policy="automatic" --project=$PROJECT_ID || true
 
 # 確保至少有一個 Dummy 版本，避免部署時找不到 :latest 而失敗
-echo -n "placeholder" | gcloud secrets versions add WEBHOOK_URL --data-file=- --project=$PROJECT_ID || true
+echo -n "placeholder" | gcloud secrets versions add SHOWTIMES_WEBHOOK_URL --data-file=- --project=$PROJECT_ID || true
 echo -n "placeholder" | gcloud secrets versions add VIESHOW_WEBHOOK_URL --data-file=- --project=$PROJECT_ID || true
 
 echo "=== 4. 設定 IAM 權限 ==="
-gcloud secrets add-iam-policy-binding WEBHOOK_URL \
+gcloud secrets add-iam-policy-binding SHOWTIMES_WEBHOOK_URL \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/secretmanager.secretAccessor" \
   --project=$PROJECT_ID

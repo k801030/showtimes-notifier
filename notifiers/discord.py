@@ -6,11 +6,13 @@ class DiscordNotifier(BaseNotifier):
     def send(self, chain: str, theater_name: str, fri_str: str, thu_str: str, movie_count: int, target_url: str):
         if chain == "vieshow":
             webhook_url = config.VIESHOW_WEBHOOK_URL
+            var_name = "VIESHOW_WEBHOOK_URL"
         else:
-            webhook_url = config.WEBHOOK_URL
+            webhook_url = config.SHOWTIMES_WEBHOOK_URL
+            var_name = "SHOWTIMES_WEBHOOK_URL"
             
         if not webhook_url:
-            print("❌ 錯誤：未設定 WEBHOOK_URL。通知未發送。")
+            print(f"❌ 錯誤：未設定 {var_name}。通知未發送。")
             return
             
         short_name = theater_name.replace("影城", "")

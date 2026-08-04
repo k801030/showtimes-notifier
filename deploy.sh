@@ -9,16 +9,16 @@ else
   exit 1
 fi
 
-if [ -z "$WEBHOOK_URL" ] || [ -z "$PROJECT_ID" ] || [ -z "$PROJECT_NUMBER" ] || [ -z "$REGION" ]; then
-  echo "❌ 錯誤：.env 中未設定必要的環境變數 (WEBHOOK_URL, PROJECT_ID, PROJECT_NUMBER, REGION)！"
+if [ -z "$SHOWTIMES_WEBHOOK_URL" ] || [ -z "$PROJECT_ID" ] || [ -z "$PROJECT_NUMBER" ] || [ -z "$REGION" ]; then
+  echo "❌ 錯誤：.env 中未設定必要的環境變數 (SHOWTIMES_WEBHOOK_URL, PROJECT_ID, PROJECT_NUMBER, REGION)！"
   exit 1
 fi
 
 SA_EMAIL="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
 echo "=== 1. 更新 Secret 版本 ==="
-if [ -n "$WEBHOOK_URL" ]; then
-  echo -n "$WEBHOOK_URL" | gcloud secrets versions add WEBHOOK_URL --data-file=- --project=$PROJECT_ID
+if [ -n "$SHOWTIMES_WEBHOOK_URL" ]; then
+  echo -n "$SHOWTIMES_WEBHOOK_URL" | gcloud secrets versions add SHOWTIMES_WEBHOOK_URL --data-file=- --project=$PROJECT_ID
 fi
 if [ -n "$VIESHOW_WEBHOOK_URL" ]; then
   echo -n "$VIESHOW_WEBHOOK_URL" | gcloud secrets versions add VIESHOW_WEBHOOK_URL --data-file=- --project=$PROJECT_ID
@@ -34,7 +34,7 @@ gcloud functions deploy showtimes-notifier \
   --trigger-http \
   --allow-unauthenticated \
   --set-env-vars THEATER_ID=91,VIESHOW_CINEMA_CODE=BQ,NOTIFICATION_CHANNEL=discord,CHAIN=showtimes \
-  --set-secrets 'WEBHOOK_URL=WEBHOOK_URL:latest,VIESHOW_WEBHOOK_URL=VIESHOW_WEBHOOK_URL:latest' \
+  --set-secrets 'SHOWTIMES_WEBHOOK_URL=SHOWTIMES_WEBHOOK_URL:latest,VIESHOW_WEBHOOK_URL=VIESHOW_WEBHOOK_URL:latest' \
   --project=$PROJECT_ID
 
 echo "=== 3. 建立 Cloud Scheduler 定時排程 (Scheme A) ==="
