@@ -18,10 +18,10 @@ class VieshowFetcher(BaseFetcher):
         
         try:
             fri_date = datetime.datetime.strptime(fri_str, "%Y-%m-%d")
-            today = datetime.datetime.now()
+            prev_thu_date = fri_date - datetime.timedelta(days=1)
             
             fri_str_tw = fri_date.strftime("%m月%d日")
-            today_str_tw = today.strftime("%m月%d日")
+            prev_thu_str_tw = prev_thu_date.strftime("%m月%d日")
         except Exception as e:
             print(f"❌ 日期格式轉換失敗: {e}")
             return None
@@ -53,35 +53,39 @@ class VieshowFetcher(BaseFetcher):
             
         soup = BeautifulSoup(r.text, "html.parser")
         
-        today_movies = set()
         fri_movies = set()
+        n_thu = 0
+        n_fri = 0
         
-        for movie_tag in soup.find_all("strong", class_="MovieName"):
+        for movie_tag in soup.select("strong.LangTW.MovieName"):
             movie_name = movie_tag.text.strip()
             parent_div = movie_tag.parent
             if not parent_div:
                 continue
                 
-            dates = [d.text.strip() for d in parent_div.find_all("strong", class_="RealShowDate")]
+            tw_dates = parent_div.select("strong.LangTW.RealShowDate")
+            session_blocks = parent_div.select("div.SessionTimeInfo")
             
-            if any(today_str_tw in d for d in dates):
-                today_movies.add(movie_name)
-            if any(fri_str_tw in d for d in dates):
-                fri_movies.add(movie_name)
-                
-        n_today = len(today_movies)
-        n_fri = len(fri_movies)
-        
-        print(f"[場次統計] 今天 ({today_str_tw}): {n_today} 部")
-        print(f"[場次統計] 週五 ({fri_str_tw}): {n_fri} 部 (包含預售/應援場)")
+            if len(tw_dates) == len(session_blocks):
+                for date_tag, sessions in zip(tw_dates, session_blocks):
+                    date_text = date_tag.text.strip()
+                    count = len(sessions.select("div.col-xs-0"))
+                    if prev_thu_str_tw in date_text:
+                        n_thu += count
+                    if fri_str_tw in date_text:
+                        n_fri += count
+                        fri_movies.add(movie_name)
+                        
+        print(f"[場次統計] 本週四 ({prev_thu_str_tw}): {n_thu} 場")
+        print(f"[場次統計] 週五 ({fri_str_tw}): {n_fri} 場")
         print(f"週五上映清單: {fri_movies}")
         
-        if n_today == 0:
-            print("❌ 警告：今天居然沒有任何電影？無法計算比例。")
+        if n_thu == 0:
+            print("❌ 警告：本週四居然沒有任何場次？無法計算比例。")
             return None
             
-        ratio = n_fri / n_today
-        print(f"開放比例 (週五/今天): {ratio:.2f} (大於 0.50 即判定為全面開放)")
+        ratio = n_fri / n_thu
+        print(f"開放比例 (週五/本週四): {ratio:.2f} (大於 0.50 即判定為全面開放)")
         
         is_opened = ratio > 0.50
         

@@ -16,15 +16,16 @@ class DiscordNotifier(BaseNotifier):
         short_name = theater_name.replace("影城", "")
         f_date = fri_str[5:].replace("-", "/")
         t_date = thu_str[5:].replace("-", "/")
+        unit = "個場次" if chain == "vieshow" else "部電影"
         
-        print(f"\n[準備發送 Discord 通知] {short_name} | {f_date}~{t_date} | {movie_count}部電影")
+        print(f"\n[準備發送 Discord 通知] {short_name} | {f_date}~{t_date} | {movie_count}{unit}")
         
         payload = {
             "embeds": [
                 {
                     "title": f"【{short_name}】場次開放！",
                     "url": target_url,
-                    "description": f"{f_date} ~ {t_date} (共 {movie_count} 部電影)",
+                    "description": f"{f_date} ~ {t_date} (共 {movie_count} {unit})",
                     "color": 15158332
                 }
             ]

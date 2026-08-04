@@ -16,13 +16,14 @@ class TelegramNotifier(BaseNotifier):
         short_name = theater_name.replace("影城", "")
         f_date = fri_str[5:].replace("-", "/")
         t_date = thu_str[5:].replace("-", "/")
+        unit = "個場次" if chain == "vieshow" else "部電影"
         
-        print(f"\n[準備發送 Telegram 通知] {short_name} | {f_date}~{t_date} | {movie_count}部電影")
+        print(f"\n[準備發送 Telegram 通知] {short_name} | {f_date}~{t_date} | {movie_count}{unit}")
         
         url = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}/sendMessage"
         payload = {
             "chat_id": channel_id,
-            "text": f"**【{short_name}】場次開放 (週五至下週四)！**\n{f_date} ~ {t_date} (共 {movie_count} 部電影)",
+            "text": f"**【{short_name}】場次開放 (週五至下週四)！**\n{f_date} ~ {t_date} (共 {movie_count} {unit})",
             "parse_mode": "Markdown",
             "reply_markup": {
                 "inline_keyboard": [
