@@ -1,7 +1,8 @@
 import os
 
-# 純 Python 載入 .env 檔案，避免依賴外部套件，讓本地執行極致單純
-env_path = os.path.join(os.path.dirname(__file__), ".env")
+# 載入 .env 檔案中的環境變數
+# 注意：因為此檔案在 core/ 目錄下，故需要往上一層尋找 .env
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 if os.path.exists(env_path):
     with open(env_path, "r") as f:
         for line in f:
@@ -11,14 +12,25 @@ if os.path.exists(env_path):
                 os.environ[key.strip()] = val.strip()
 
 # ==========================================
-# 監控設定
+# 監控設定 (秀泰)
 # ==========================================
 THEATER_ID = os.getenv("THEATER_ID", "91")
+
+# ==========================================
+# 監控設定 (威秀 - Step 3 使用，先在此定義)
+# ==========================================
+VIESHOW_THEATER_ID = os.getenv("VIESHOW_THEATER_ID", "板橋大遠百威秀影城")
 
 # ==========================================
 # 通知管道設定
 # ==========================================
 NOTIFICATION_CHANNEL = os.getenv("NOTIFICATION_CHANNEL", "discord").lower()
+
+# 秀泰通知
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
+
+# 威秀通知 (Step 3 使用)
+VIESHOW_WEBHOOK_URL = os.getenv("VIESHOW_WEBHOOK_URL", "")
+VIESHOW_TELEGRAM_CHANNEL_ID = os.getenv("VIESHOW_TELEGRAM_CHANNEL_ID", "")
