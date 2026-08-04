@@ -13,7 +13,10 @@ class TelegramNotifier(BaseNotifier):
             print("❌ 錯誤：未設定 Telegram Token 或 Channel ID。通知未發送。")
             return
             
-        short_name = theater_name.replace("影城", "")
+        if "威秀" in theater_name:
+            short_name = "威秀影城"
+        else:
+            short_name = theater_name.replace("影城", "")
         f_date = fri_str[5:].replace("-", "/")
         t_date = thu_str[5:].replace("-", "/")
         
@@ -21,7 +24,7 @@ class TelegramNotifier(BaseNotifier):
         
         url = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}/sendMessage"
         payload = {
-            "chat_id": config.TELEGRAM_CHANNEL_ID,
+            "chat_id": channel_id,
             "text": f"**【{short_name}】場次開放 (週五至下週四)！**\n{f_date} ~ {t_date} (共 {movie_count} 部電影)",
             "parse_mode": "Markdown",
             "reply_markup": {

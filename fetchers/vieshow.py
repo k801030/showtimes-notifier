@@ -87,7 +87,7 @@ class VieshowFetcher(BaseFetcher):
         
         return {
             "is_opened": is_opened,
-            "theater_name": "板橋大遠百威秀影城" if cinema_code == "BQ" else f"威秀影城({cinema_code})",
+            "theater_name": "威秀影城",
             "movie_count": n_fri,
-            "target_url": "https://www.vscinemas.com.tw/ShowTimes/"
+            "target_url": "https://www.vscinemas.com.tw/vsTicketing/ticketing/ticket.aspx"
         }

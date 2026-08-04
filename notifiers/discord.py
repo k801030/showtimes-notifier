@@ -13,7 +13,10 @@ class DiscordNotifier(BaseNotifier):
             print("❌ 錯誤：未設定 WEBHOOK_URL。通知未發送。")
             return
             
-        short_name = theater_name.replace("影城", "")
+        if "威秀" in theater_name:
+            short_name = "威秀影城"
+        else:
+            short_name = theater_name.replace("影城", "")
         f_date = fri_str[5:].replace("-", "/")
         t_date = thu_str[5:].replace("-", "/")
         
