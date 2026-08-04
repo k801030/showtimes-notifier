@@ -13,10 +13,7 @@ class TelegramNotifier(BaseNotifier):
             print("❌ 錯誤：未設定 Telegram Token 或 Channel ID。通知未發送。")
             return
             
-        if "威秀" in theater_name:
-            short_name = "威秀影城"
-        else:
-            short_name = theater_name.replace("影城", "")
+        short_name = theater_name.replace("影城", "")
         f_date = fri_str[5:].replace("-", "/")
         t_date = thu_str[5:].replace("-", "/")
         
