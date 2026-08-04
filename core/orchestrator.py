@@ -13,6 +13,9 @@ def run(chain: str, force_notify: bool):
     # 1. 取得對應的 Fetcher
     if chain == "showtimes":
         fetcher = ShowtimesFetcher()
+    elif chain == "vieshow":
+        from fetchers.vieshow import VieshowFetcher
+        fetcher = VieshowFetcher()
     else:
         print(f"❌ 未知的影城體系: {chain}")
         return

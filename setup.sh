@@ -34,12 +34,21 @@ echo "=== 2. 建立 Firestore 資料庫 ==="
 # 允許已存在錯誤
 gcloud firestore databases create --location=$REGION --type=firestore-native --project=$PROJECT_ID || true
 
-echo "=== 3. 建立 Secret Manager Secret ==="
-# 允許已存在錯誤
+echo "=== 3. 建立 Secret Manager Secrets ==="
 gcloud secrets create WEBHOOK_URL --replication-policy="automatic" --project=$PROJECT_ID || true
+gcloud secrets create VIESHOW_WEBHOOK_URL --replication-policy="automatic" --project=$PROJECT_ID || true
+
+# 確保至少有一個 Dummy 版本，避免部署時找不到 :latest 而失敗
+echo -n "placeholder" | gcloud secrets versions add WEBHOOK_URL --data-file=- --project=$PROJECT_ID || true
+echo -n "placeholder" | gcloud secrets versions add VIESHOW_WEBHOOK_URL --data-file=- --project=$PROJECT_ID || true
 
 echo "=== 4. 設定 IAM 權限 ==="
 gcloud secrets add-iam-policy-binding WEBHOOK_URL \
+  --member="serviceAccount:$SA_EMAIL" \
+  --role="roles/secretmanager.secretAccessor" \
+  --project=$PROJECT_ID
+
+gcloud secrets add-iam-policy-binding VIESHOW_WEBHOOK_URL \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/secretmanager.secretAccessor" \
   --project=$PROJECT_ID

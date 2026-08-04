@@ -4,7 +4,12 @@ from core import config
 
 class TelegramNotifier(BaseNotifier):
     def send(self, chain: str, theater_name: str, fri_str: str, thu_str: str, movie_count: int, target_url: str):
-        if not config.TELEGRAM_BOT_TOKEN or not config.TELEGRAM_CHANNEL_ID:
+        if chain == "vieshow":
+            channel_id = config.VIESHOW_TELEGRAM_CHANNEL_ID
+        else:
+            channel_id = config.TELEGRAM_CHANNEL_ID
+            
+        if not config.TELEGRAM_BOT_TOKEN or not channel_id:
             print("❌ 錯誤：未設定 Telegram Token 或 Channel ID。通知未發送。")
             return
             

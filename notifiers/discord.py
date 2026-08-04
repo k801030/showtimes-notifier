@@ -4,7 +4,11 @@ from core import config
 
 class DiscordNotifier(BaseNotifier):
     def send(self, chain: str, theater_name: str, fri_str: str, thu_str: str, movie_count: int, target_url: str):
-        webhook_url = config.WEBHOOK_URL
+        if chain == "vieshow":
+            webhook_url = config.VIESHOW_WEBHOOK_URL
+        else:
+            webhook_url = config.WEBHOOK_URL
+            
         if not webhook_url:
             print("❌ 錯誤：未設定 WEBHOOK_URL。通知未發送。")
             return

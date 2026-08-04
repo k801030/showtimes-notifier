@@ -17,9 +17,9 @@ if os.path.exists(env_path):
 THEATER_ID = os.getenv("THEATER_ID", "91")
 
 # ==========================================
-# 監控設定 (威秀 - Step 3 使用，先在此定義)
+# 監控設定 (威秀)
 # ==========================================
-VIESHOW_THEATER_ID = os.getenv("VIESHOW_THEATER_ID", "板橋大遠百威秀影城")
+VIESHOW_CINEMA_CODE = os.getenv("VIESHOW_CINEMA_CODE", "BQ")
 
 # ==========================================
 # 通知管道設定
